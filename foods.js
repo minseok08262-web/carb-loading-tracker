@@ -1,0 +1,35 @@
+// 일반적인 1회 제공량 기준 대략값. 성분표가 있으면 그 값을 우선한다.
+export const FOODS = [
+  { name: "공기밥 1공기 (210g)", carbs: 65 },
+  { name: "햇반 1개 (210g)", carbs: 66 },
+  { name: "가래떡 100g", carbs: 49 },
+  { name: "백설기 1조각 (100g)", carbs: 50 },
+  { name: "꿀떡 5개 (100g)", carbs: 52 },
+  { name: "식빵 1장", carbs: 17 },
+  { name: "베이글 1개", carbs: 50 },
+  { name: "카스텔라 1조각 (50g)", carbs: 28 },
+  { name: "바나나 1개", carbs: 27 },
+  { name: "사과 1개 (중)", carbs: 25 },
+  { name: "고구마 1개 (150g)", carbs: 43 },
+  { name: "감자 1개 (150g)", carbs: 25 },
+  { name: "파스타 건면 100g", carbs: 72 },
+  { name: "김밥 1줄", carbs: 65 },
+  { name: "삼각김밥 1개", carbs: 38 },
+  { name: "우동 1그릇", carbs: 75 },
+  { name: "시리얼 30g + 우유", carbs: 35 },
+  { name: "꿀 1큰술", carbs: 17 },
+  { name: "잼 1큰술", carbs: 13 },
+  { name: "이온음료 500ml", carbs: 31, water: 500 },
+  { name: "오렌지주스 200ml", carbs: 22, water: 200 },
+  { name: "에너지젤 1개", carbs: 22 },
+  { name: "물 500ml", carbs: 0, water: 500 },
+];
+
+export const DEFAULT_QUICK = [
+  { name: "밥 1공기", carbs: 65 },
+  { name: "바나나", carbs: 27 },
+  { name: "가래떡 100g", carbs: 49 },
+  { name: "식빵 1장", carbs: 17 },
+  { name: "이온음료", carbs: 31, water: 500 },
+  { name: "물 500ml", carbs: 0, water: 500 },
+];

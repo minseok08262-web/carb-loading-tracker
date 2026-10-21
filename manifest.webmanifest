@@ -1,0 +1,9 @@
+{
+  "name": "카보로딩 트래커",
+  "short_name": "카보로딩",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#04342C",
+  "theme_color": "#04342C",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

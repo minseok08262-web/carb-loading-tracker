@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#04342C">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="카보로딩">
+  <meta name="description" content="마라톤 3일 카보로딩 동안 탄수화물과 수분 섭취를 기록하는 트래커">
+  <title>카보로딩 트래커</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="inapp" class="inapp" hidden>
+    <p>카카오톡 안에서 열면 기록이 사라질 수 있어요. 크롬이나 사파리에서 열고 홈 화면에 추가해 주세요.</p>
+    <button id="openExternal" class="btn small">브라우저로 열기</button>
+  </div>
+
+  <main id="app" class="app">
+    <section class="hero" id="hero">
+      <img id="heroImg" class="hero-img" alt="" hidden>
+      <div class="hero-shade"></div>
+      <div class="hero-top">
+        <span id="raceName" class="race-name"></span>
+        <button id="openSettings" class="icon-btn" aria-label="설정">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+        </button>
+      </div>
+      <div class="hero-bottom">
+        <p id="quote" class="quote"></p>
+        <div id="dots" class="dots"></div>
+      </div>
+    </section>
+
+    <section class="schedule">
+      <div class="row-between">
+        <p id="countdown" class="muted"></p>
+        <p id="phase" class="muted"></p>
+      </div>
+      <div id="days" class="days"></div>
+    </section>
+
+    <section class="progress card" id="progress">
+      <svg class="ring" viewBox="0 0 120 120" role="img" aria-labelledby="ringTitle">
+        <title id="ringTitle">탄수화물 진행률</title>
+        <circle cx="60" cy="60" r="50" class="ring-track"/>
+        <circle cx="60" cy="60" r="50" class="ring-fill" id="ring"/>
+        <text x="60" y="58" text-anchor="middle" class="ring-pct" id="pct">0%</text>
+        <text x="60" y="78" text-anchor="middle" class="ring-sub" id="carbText">0 / 0g</text>
+      </svg>
+      <div class="progress-side">
+        <p id="message" class="message"></p>
+        <p class="muted small">수분 <span id="waterText">0 / 0L</span></p>
+        <div class="bar"><div class="bar-fill" id="waterBar"></div></div>
+        <p id="remain" class="muted small"></p>
+      </div>
+    </section>
+
+    <section class="tip-wrap">
+      <ul id="tips" class="tips"></ul>
+    </section>
+
+    <section class="quick">
+      <div class="row-between">
+        <h2>빠른 추가</h2>
+        <button id="openAdd" class="btn primary small">+ 기록하기</button>
+      </div>
+      <div id="quick" class="quick-grid"></div>
+    </section>
+
+    <section class="log">
+      <h2 id="logTitle">오늘 기록</h2>
+      <ul id="logList" class="log-list"></ul>
+      <p id="logEmpty" class="muted small empty">아직 기록이 없어요. 첫 끼를 채워볼까요?</p>
+    </section>
+  </main>
+
+  <!-- 기록 추가 -->
+  <div class="sheet-wrap" id="addSheet" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="addTitle">
+      <div class="sheet-head">
+        <h2 id="addTitle">기록하기</h2>
+        <button class="icon-btn dark" data-close aria-label="닫기">✕</button>
+      </div>
+      <div class="tabs" role="tablist">
+        <button role="tab" class="tab active" data-tab="manual">직접 입력</button>
+        <button role="tab" class="tab" data-tab="search">음식 목록</button>
+        <button role="tab" class="tab" data-tab="ai">사진·설명 추정</button>
+      </div>
+
+      <div class="tab-panel" data-panel="manual">
+        <label>음식 이름<input id="mName" type="text" placeholder="햇반 1개"></label>
+        <div class="two">
+          <label>탄수화물 (g)<input id="mCarbs" type="number" inputmode="decimal" min="0" placeholder="66"></label>
+          <label>수분 (ml)<input id="mWater" type="number" inputmode="numeric" min="0" placeholder="0"></label>
+        </div>
+        <label class="check"><input id="mSave" type="checkbox"> 빠른 추가에도 저장</label>
+        <p class="error" id="mError" hidden></p>
+        <button class="btn primary full" id="mSubmit">추가</button>
+      </div>
+
+      <div class="tab-panel" data-panel="search" hidden>
+        <input id="sQuery" type="search" placeholder="떡, 바나나, 김밥…">
+        <ul id="sList" class="pick-list"></ul>
+        <p class="muted small">표시된 값은 일반적인 1인분 기준 대략값이에요. 성분표가 있으면 직접 입력이 더 정확해요.</p>
+      </div>
+
+      <div class="tab-panel" data-panel="ai" hidden>
+        <div id="aiNoKey" class="note" hidden>
+          사진 추정을 쓰려면 설정에서 Claude API 키를 넣어 주세요. 키는 이 기기에만 저장돼요.
+        </div>
+        <label class="photo-pick">
+          <input id="aiPhoto" type="file" accept="image/*" capture="environment">
+          <span id="aiPhotoLabel">사진 찍기 또는 고르기</span>
+        </label>
+        <img id="aiPreview" class="ai-preview" alt="선택한 음식 사진" hidden>
+        <label>설명 (선택)<textarea id="aiDesc" rows="2" placeholder="순대국밥 한 그릇, 밥은 반 공기만 먹음"></textarea></label>
+        <p class="error" id="aiError" hidden></p>
+        <button class="btn primary full" id="aiRun">탄수화물 추정하기</button>
+        <div id="aiResult" hidden>
+          <ul id="aiItems" class="ai-items"></ul>
+          <p id="aiNote" class="muted small"></p>
+          <div class="row-between total-row"><span>합계</span><span><input id="aiTotal" type="number" inputmode="decimal" class="inline-num"> g</span></div>
+          <button class="btn primary full" id="aiSave">이대로 기록</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 설정 -->
+  <div class="sheet-wrap" id="settingsSheet" hidden>
+    <div class="sheet tall" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+      <div class="sheet-head">
+        <h2 id="setTitle">설정</h2>
+        <button class="icon-btn dark" data-close aria-label="닫기">✕</button>
+      </div>
+      <form id="settingsForm" class="settings">
+        <h3>대회</h3>
+        <label>대회 이름<input name="raceName" type="text" placeholder="춘천마라톤"></label>
+        <label>대회 날짜<input name="raceDate" type="date" required></label>
+        <label>체중 (kg)<input name="weight" type="number" inputmode="decimal" min="30" max="150" step="0.1" required></label>
+
+        <h3>하루 목표</h3>
+        <p class="muted small">기본값은 Featherstone Nutrition 가이드 기준이에요. 로딩 3일은 하루 8g/kg, 대회 아침은 약 1.1g/kg(최소 75g)이에요. 수분은 비워 두면 평소 필요량에 로딩 중 추가분 약 0.9L를 더해 자동으로 계산해요.</p>
+        <div class="target-grid">
+          <span></span><span class="muted small">탄수화물 g/kg</span><span class="muted small">수분 L</span>
+          <span>D-3</span><input name="c3" type="number" step="0.5" min="0"><input name="w3" type="number" step="0.1" min="0">
+          <span>D-2</span><input name="c2" type="number" step="0.5" min="0"><input name="w2" type="number" step="0.1" min="0">
+          <span>D-1</span><input name="c1" type="number" step="0.5" min="0"><input name="w1" type="number" step="0.1" min="0">
+          <span>당일 아침</span><input name="c0" type="number" step="0.5" min="0"><input name="w0" type="number" step="0.1" min="0">
+        </div>
+
+        <h3>동기부여</h3>
+        <label>문구 (한 줄에 하나)<textarea name="quotes" rows="4"></textarea></label>
+        <div class="photo-manage">
+          <div id="photoThumbs" class="thumbs"></div>
+          <label class="btn small">사진 추가<input id="photoInput" type="file" accept="image/*" multiple hidden></label>
+        </div>
+
+        <h3>사진 추정 (선택)</h3>
+        <label>Claude API 키<input name="apiKey" type="password" autocomplete="off" placeholder="sk-ant-..."></label>
+        <p class="muted small">키는 이 기기 브라우저에만 저장되고 Anthropic API로만 전송돼요. 사용한 만큼 API 요금이 나와요.</p>
+
+        <h3>빠른 추가 목록</h3>
+        <ul id="quickManage" class="pick-list"></ul>
+
+        <p class="error" id="setError" hidden></p>
+        <button class="btn primary full" type="submit">저장</button>
+        <button class="btn danger full" type="button" id="resetAll">기록 모두 지우기</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
