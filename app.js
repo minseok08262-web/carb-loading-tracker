@@ -611,6 +611,36 @@ function renderQuickManage() {
   }
 }
 
+function updateQuick(next) {
+  quick = next;
+  save(KEYS.quick, quick);
+  renderQuickManage();
+  renderQuick();
+}
+
+$("qAdd").addEventListener("click", () => {
+  const name = $("qName").value.trim();
+  const carbs = $("qCarbs").value;
+  const water = $("qWater").value;
+  if (!name) return showError("qError", "음식 이름을 입력해 주세요");
+  if (carbs === "" && water === "") return showError("qError", "탄수화물이나 수분 중 하나는 입력해 주세요");
+  if (Number(carbs) < 0 || Number(water) < 0) return showError("qError", "0 이상의 숫자를 입력해 주세요");
+  showError("qError", "");
+  updateQuick([...quick, { name, carbs: Number(carbs) || 0, water: Number(water) || 0 }]);
+  $("qName").value = $("qCarbs").value = $("qWater").value = "";
+  toast(`빠른 추가에 넣었어요: ${name}`);
+});
+["qName", "qCarbs", "qWater"].forEach((id) => $(id).addEventListener("input", () => showError("qError", "")));
+
+// 기본 항목을 원래 순서대로 앞에 두고, 직접 넣은 항목은 뒤에 그대로 둔다.
+$("qRestore").addEventListener("click", () => {
+  const defaultNames = new Set(DEFAULT_QUICK.map((d) => d.name));
+  const missing = DEFAULT_QUICK.filter((d) => !quick.some((q) => q.name === d.name));
+  if (!missing.length) return toast("기본 항목이 모두 들어 있어요");
+  updateQuick([...DEFAULT_QUICK, ...quick.filter((q) => !defaultNames.has(q.name))]);
+  toast(`되돌렸어요: ${missing.map((d) => d.name).join(", ")}`);
+});
+
 async function resizeToBlob(file, max = 1280) {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));

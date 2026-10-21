@@ -272,6 +272,8 @@ label { display: grid; gap: 6px; font-size: 14px; color: var(--muted); margin-bo
 .inline-num { width: 76px; padding: 6px 8px; text-align: right; }
 .total-row { font-weight: 600; margin: 10px 0 14px; }
 
+.quick-add { display: grid; gap: 8px; margin-bottom: 8px; }
+.quick-add .error { margin: 0; }
 .settings .target-grid { display: grid; grid-template-columns: 72px 1fr 1fr; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 14px; }
 .thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
 .thumb { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; }

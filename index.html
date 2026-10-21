@@ -168,6 +168,18 @@
 
         <h3>빠른 추가 목록</h3>
         <ul id="quickManage" class="pick-list"></ul>
+        <div class="quick-add">
+          <input id="qName" type="text" placeholder="음식 이름 (예: 햇반 1개)">
+          <div class="two">
+            <input id="qCarbs" type="number" inputmode="decimal" min="0" placeholder="탄수화물 g">
+            <input id="qWater" type="number" inputmode="numeric" min="0" placeholder="수분 ml">
+          </div>
+          <p class="error" id="qError" hidden></p>
+          <div class="two">
+            <button class="btn small" type="button" id="qAdd">목록에 넣기</button>
+            <button class="btn small" type="button" id="qRestore">기본 항목 되돌리기</button>
+          </div>
+        </div>
 
         <p class="error" id="setError" hidden></p>
         <button class="btn primary full" type="submit">저장</button>
