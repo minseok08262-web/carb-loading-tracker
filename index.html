@@ -89,7 +89,7 @@
       </div>
       <div class="tabs" role="tablist">
         <button role="tab" class="tab active" data-tab="manual">직접 입력</button>
-        <button role="tab" class="tab" data-tab="search">음식 목록</button>
+        <button role="tab" class="tab" data-tab="search">음식 검색</button>
         <button role="tab" class="tab" data-tab="ai">사진·설명 추정</button>
       </div>
 
@@ -105,9 +105,10 @@
       </div>
 
       <div class="tab-panel" data-panel="search" hidden>
-        <input id="sQuery" type="search" placeholder="떡, 바나나, 김밥…">
+        <input id="sQuery" type="search" placeholder="단감 1개, 순대국 1그릇, 우유 200ml">
+        <p id="sStatus" class="muted small status"></p>
         <ul id="sList" class="pick-list"></ul>
-        <p class="muted small">표시된 값은 일반적인 1인분 기준 대략값이에요. 성분표가 있으면 직접 입력이 더 정확해요.</p>
+        <p class="muted small">음식 데이터: 식품의약품안전처 식품영양성분 데이터베이스(공공데이터포털). 1개·1그릇 무게는 대략값이라 먹은 양에 맞게 g을 고쳐 주세요. 성분표가 있으면 직접 입력이 더 정확해요.</p>
       </div>
 
       <div class="tab-panel" data-panel="ai" hidden>

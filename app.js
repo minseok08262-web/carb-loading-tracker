@@ -1,4 +1,5 @@
 import { FOODS, DEFAULT_QUICK } from "./foods.js";
+import { loadFoodDb, parseQuery, gramsFor, searchFoods } from "./fooddb.js";
 
 const KEYS = { settings: "cl.settings", logs: "cl.logs", quick: "cl.quick" };
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -292,7 +293,8 @@ function renderLog() {
 }
 
 // ---------- 기록 ----------
-function addEntry({ name, carbs = 0, water = 0 }) {
+// kcal·protein은 지금 화면에 쓰지 않지만, 나중에 칼로리 트래커로 넓힐 때를 위해 같이 남긴다.
+function addEntry({ name, carbs = 0, water = 0, kcal, protein }) {
   const now = new Date();
   const entry = {
     id: `${now.getTime()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -301,6 +303,8 @@ function addEntry({ name, carbs = 0, water = 0 }) {
     carbs: Math.round(Number(carbs) || 0),
     water: Math.round(Number(water) || 0),
   };
+  if (kcal != null) entry.kcal = Math.round(kcal);
+  if (protein != null) entry.protein = Math.round(protein);
   (logs[selectedDay] ||= []).push(entry);
   save(KEYS.logs, logs);
   render();
@@ -424,38 +428,130 @@ $("mSubmit").addEventListener("click", () => {
 });
 ["mName", "mCarbs", "mWater"].forEach((id) => $(id).addEventListener("input", () => showError("mError", "")));
 
-function renderSearch() {
-  const q = $("sQuery").value.trim().toLowerCase();
+let searchToken = 0;
+
+async function renderSearch() {
+  const text = $("sQuery").value.trim();
+  const parsed = parseQuery(text);
+  const q = parsed.name.toLowerCase();
   const seen = new Set();
   const all = [...quick, ...FOODS].filter((f) => !seen.has(f.name) && seen.add(f.name));
   const list = $("sList");
   list.replaceChildren();
   all
     .filter((f) => !q || f.name.toLowerCase().includes(q))
-    .forEach((f) => {
-      const li = document.createElement("li");
-      const name = document.createElement("span");
-      name.className = "name";
-      name.textContent = f.name;
-      const val = document.createElement("span");
-      val.className = "val";
-      val.textContent = formatEntry(f);
-      const mult = document.createElement("span");
-      mult.className = "mult";
-      [0.5, 1, 1.5].forEach((m) => {
-        const b = document.createElement("button");
-        b.textContent = `×${m}`;
-        b.addEventListener("click", () => {
-          addEntry({ name: m === 1 ? f.name : `${f.name} ×${m}`, carbs: (f.carbs || 0) * m, water: (f.water || 0) * m });
-          closeSheet("addSheet");
-        });
-        mult.append(b);
-      });
-      li.append(name, val, mult);
-      list.append(li);
-    });
+    .slice(0, text ? 3 : undefined)
+    .forEach((f) => list.append(curatedRow(f)));
+
+  $("sStatus").textContent = "";
+  if (!text) return;
+  const token = ++searchToken;
+  let items;
+  try {
+    $("sStatus").textContent = "음식 데이터를 불러오는 중…";
+    items = await loadFoodDb();
+  } catch {
+    if (token === searchToken) $("sStatus").textContent = "음식 데이터를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.";
+    return;
+  }
+  if (token !== searchToken) return;
+  const results = searchFoods(items, parsed.name);
+  $("sStatus").textContent = results.length ? "" : "찾는 음식이 없어요. 이름을 짧게 바꾸거나 직접 입력을 이용해 주세요.";
+  results.forEach((item) => list.append(dbRow(item, parsed)));
 }
-$("sQuery").addEventListener("input", renderSearch);
+
+function dbRow(item, parsed) {
+  const li = document.createElement("li");
+  li.className = "db-row";
+  const head = document.createElement("div");
+  head.className = "db-head";
+  const name = document.createElement("span");
+  name.className = "name";
+  name.textContent = item.name;
+  const result = document.createElement("b");
+  result.className = "db-carbs";
+  head.append(name, result);
+
+  const sub = document.createElement("p");
+  sub.className = "muted small";
+  sub.textContent = `100g당 탄수화물 ${item.carbs}g` + (item.serving ? ` · 1인분 ${item.serving}g` : "");
+
+  const controls = document.createElement("div");
+  controls.className = "db-controls";
+  const grams = gramsFor(item, parsed.name, parsed);
+  const input = document.createElement("input");
+  input.type = "number";
+  input.inputMode = "decimal";
+  input.min = "0";
+  input.step = "any";
+  input.className = "inline-num";
+  input.value = grams != null ? Math.round(grams) : "";
+  input.placeholder = "g";
+  input.setAttribute("aria-label", `${item.name} 먹은 양 (g)`);
+  const unit = document.createElement("span");
+  unit.className = "muted small";
+  unit.textContent = grams != null ? "g" : "g · 무게를 넣어 주세요";
+  const btn = document.createElement("button");
+  btn.className = "btn small primary";
+  btn.textContent = "추가";
+
+  const update = () => {
+    const g = Number(input.value);
+    result.textContent = g > 0 ? `${Math.round((item.carbs * g) / 100)}g` : "–";
+  };
+  input.addEventListener("input", () => {
+    unit.textContent = "g";
+    update();
+  });
+  btn.addEventListener("click", () => {
+    const g = Number(input.value);
+    if (!(g > 0)) {
+      unit.textContent = "g · 먹은 양을 g으로 넣어 주세요";
+      input.focus();
+      return;
+    }
+    addEntry({
+      name: `${item.name} ${Math.round(g)}g`,
+      carbs: (item.carbs * g) / 100,
+      kcal: item.kcal != null ? (item.kcal * g) / 100 : undefined,
+      protein: item.prot != null ? (item.prot * g) / 100 : undefined,
+    });
+    closeSheet("addSheet");
+  });
+  update();
+  controls.append(input, unit, btn);
+  li.append(head, sub, controls);
+  return li;
+}
+
+function curatedRow(f) {
+  const li = document.createElement("li");
+  const name = document.createElement("span");
+  name.className = "name";
+  name.textContent = f.name;
+  const val = document.createElement("span");
+  val.className = "val";
+  val.textContent = formatEntry(f);
+  const mult = document.createElement("span");
+  mult.className = "mult";
+  [0.5, 1, 1.5].forEach((m) => {
+    const b = document.createElement("button");
+    b.textContent = `×${m}`;
+    b.addEventListener("click", () => {
+      addEntry({ name: m === 1 ? f.name : `${f.name} ×${m}`, carbs: (f.carbs || 0) * m, water: (f.water || 0) * m });
+      closeSheet("addSheet");
+    });
+    mult.append(b);
+  });
+  li.append(name, val, mult);
+  return li;
+}
+
+let searchTimer = null;
+$("sQuery").addEventListener("input", () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(renderSearch, 200);
+});
 
 // ---------- 사진·설명 추정 ----------
 let aiImage = null;
